@@ -1,0 +1,5 @@
+google-genai
+ollama
+gitpython
+streamlit
+python-dotenv
