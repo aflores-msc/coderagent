@@ -6,20 +6,21 @@ from dotenv import load_dotenv
 from src.agent_logic import CodeReviewAgent
 from src.test_agent_logic import TestGenAgent
 from src.sql_agent_logic import BigQueryAgent
+from src.mongo_agent_logic import MongoAgent  # <--- NEW
 
 load_dotenv()
 
-st.set_page_config(page_title="Java + SQL Workstation", page_icon="☕", layout="wide")
-st.title("☕ Coder's Workstation")
+st.set_page_config(page_title="AI Coder", page_icon="☕", layout="wide")
+st.title("☕ AI Coder")
 
 with st.sidebar:
     st.header("⚙️ Configuration")
 
-    # --- MODEL SELECTION (UPDATED) ---
+    # Provider Selection
     provider = st.selectbox(
         "AI Model",
         [
-            "ollama (qwen2.5-coder:14b) - Generalist",
+            "ollama (qwen2.5-coder:14b) - Local Workhorse",
             "google (gemini-3-flash-preview) - Cloud SOTA"
         ],
         index=0
@@ -30,74 +31,66 @@ with st.sidebar:
     # --- AGENT SELECTOR ---
     agent_type = st.radio(
         "Select Agent Role",
-        ["🕵️‍♂️ Code Reviewer", "🧪 Unit Test Generator", "💾 Text-to-BigQuery"],
+        [
+            "🕵️‍♂️ Code Reviewer",
+            "🧪 Unit Test Generator",
+            "💾 Text-to-BigQuery",
+            "🍃 Text-to-MongoDB"  # <--- NEW
+        ],
     )
 
     # --- DYNAMIC INPUTS ---
     repo_path = None
     schema_path = None
 
+    # JAVA AGENTS
     if agent_type in ["🕵️‍♂️ Code Reviewer", "🧪 Unit Test Generator"]:
-        repo_path = st.text_input("Repo Path", value="/Users/yourname/IdeaProjects/my-app")
+        repo_path = st.text_input("Repo Path", value="/Users/user/projects/my-app")
 
+    # BIGQUERY AGENT
     elif agent_type == "💾 Text-to-BigQuery":
-        st.info("Schema Required")
+        st.info("SQL Schema Required")
+        schema_path = st.text_input("Schema File (.sql)", value="/Users/user/projects/my-app/schema.sql")
+
+    # MONGODB AGENT
+    elif agent_type == "🍃 Text-to-MongoDB":
+        st.info("JSON Schema Required")
         schema_path = st.text_input(
-            "Schema File Path (.sql/.txt)",
-            value="/Users/yourname/IdeaProjects/my-app/schema.sql",
-            help="Path to a file containing CREATE TABLE statements."
+            "Schema File (.json)",
+            value="/Users/user/projects/my-app/mongo_schema.json",
+            help="A JSON file containing sample documents for your collections."
         )
 
-    # --- INITIALIZE BUTTON ---
+    # INITIALIZE BUTTON
     if st.button("🚀 Initialize Agent", type="primary"):
-        st.session_state.messages = []  # Clear history
+        st.session_state.messages = []
 
         try:
-            # 1. CODE REVIEWER
             if agent_type == "🕵️‍♂️ Code Reviewer":
                 if os.path.exists(repo_path):
                     st.session_state.agent = CodeReviewAgent(repo_path, provider)
                     st.success("✅ Architect Loaded")
-                else:
-                    st.error("Invalid Repo Path")
 
-            # 2. TEST GENERATOR
             elif agent_type == "🧪 Unit Test Generator":
                 if os.path.exists(repo_path):
                     st.session_state.agent = TestGenAgent(repo_path, provider)
                     st.success("✅ QA Engineer Loaded")
-                else:
-                    st.error("Invalid Repo Path")
 
-            # 3. BIGQUERY AGENT
             elif agent_type == "💾 Text-to-BigQuery":
                 if os.path.exists(schema_path):
-                    with st.spinner("Ingesting Schema..."):
-                        st.session_state.agent = BigQueryAgent(schema_path, provider)
-                    st.success(f"✅ Schema Loaded!")
+                    st.session_state.agent = BigQueryAgent(schema_path, provider)
+                    st.success("✅ SQL Agent Loaded")
+
+            # NEW INITIALIZATION
+            elif agent_type == "🍃 Text-to-MongoDB":
+                if os.path.exists(schema_path):
+                    st.session_state.agent = MongoAgent(schema_path, provider)
+                    st.success("✅ Mongo Agent Loaded")
                 else:
                     st.error("❌ Schema file not found.")
 
         except Exception as e:
-            st.error(f"Initialization Failed: {e}")
-
-# --- DYNAMIC ACTION BUTTONS ---
-if "agent" in st.session_state:
-    if isinstance(st.session_state.agent, CodeReviewAgent):
-        st.sidebar.divider()
-        if st.sidebar.button("✨ Auto-Fix Issues"):
-            with st.spinner("Refactoring..."):
-                res = st.session_state.agent.fix_issues()
-                st.session_state.messages.append({"role": "assistant", "content": res})
-                st.rerun()
-
-    elif isinstance(st.session_state.agent, TestGenAgent):
-        st.sidebar.divider()
-        if st.sidebar.button("🧬 Generate JUnit Tests"):
-            with st.spinner("Writing tests..."):
-                res = st.session_state.agent.generate_tests()
-                st.session_state.messages.append({"role": "assistant", "content": res})
-                st.rerun()
+            st.error(f"Error: {e}")
 
 # --- CHAT INTERFACE ---
 if "messages" not in st.session_state:
@@ -105,9 +98,9 @@ if "messages" not in st.session_state:
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        # Special formatting for SQL code blocks
-        if "```sql" in msg["content"] or "SELECT" in msg["content"]:
-            st.markdown(msg["content"])
+        # Detect code blocks for nice formatting
+        if "db." in msg["content"] or "SELECT" in msg["content"]:
+            st.code(msg["content"], language="javascript" if "db." in msg["content"] else "sql")
         else:
             st.markdown(msg["content"])
 
@@ -118,15 +111,13 @@ if prompt := st.chat_input("Ask your agent..."):
 
     if "agent" in st.session_state:
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
+            with st.spinner("Processing..."):
                 response = st.session_state.agent.ask(prompt)
 
-                # If response looks like pure SQL, format it nicely
-                if response.strip().upper().startswith("SELECT") or response.strip().upper().startswith("WITH"):
-                    st.code(response, language="sql")
+                # Format Output
+                if response.startswith("db."):
+                    st.code(response, language="javascript")
                 else:
                     st.markdown(response)
 
                 st.session_state.messages.append({"role": "assistant", "content": response})
-    else:
-        st.warning("⚠️ Please initialize an agent from the sidebar first.")
