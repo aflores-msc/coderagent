@@ -10,7 +10,7 @@ from src.sql_agent_logic import BigQueryAgent
 load_dotenv()
 
 st.set_page_config(page_title="Java + SQL Workstation", page_icon="☕", layout="wide")
-st.title("☕ Java & BigQuery AI Workstation (M4 Pro)")
+st.title("☕ Coder's Workstation")
 
 with st.sidebar:
     st.header("⚙️ Configuration")

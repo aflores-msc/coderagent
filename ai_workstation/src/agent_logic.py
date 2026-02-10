@@ -24,38 +24,80 @@ Review the code below.
 {context_data}
 
 **YOUR CHECKLIST (ENFORCE STRICTLY):**
-1. - Show the list of staged files.
-
-2. 🧹 **Clean Up Dead Code:**
-   - **Global:** The Linter has flagged Unused Imports/Fields. Confirm and remove them.
-   - **Local:** Look inside methods. If a variable is declared but never read, flag it as "Unused Local Variable".
-
-3. 🚀 **Modernize (Java 17+):**
-   - **Records:** If you see a class with only private fields, getters, setters, and `toString`, suggest converting it to a `record`.
-   - **Var:** Use `var` for local variables where the type is obvious (e.g., `var list = new ArrayList<String>();`).
-   - **Switch:** Enforce `case ->` syntax.
-   - **Text Blocks:** If you see multi-line string concatenation, suggest using Text Blocks 
-
-4. 🛡️ **Best Practices:**
-   - **Optional:** Use `Optional.map().orElse()` instead of `if (x != null)`.
-   - **Validation:** Use `Objects.requireNonNull()` instead of `if (x == null) throw...`.
-   - **Logging:** Use SLF4J Logger instead of `System.out.println` or `e.printStackTrace()`.
-   - **Dependency Injection:** Use Constructor Injection instead of Field Injection.
-   - **Error Handling:** Use `try-with-resources` for AutoCloseable resources.
-   - **Immutability:** Use `final` for fields that are not reassigned.
-   - **Lombok:** If Lombok is used, ensure that it is used correctly (e.g., `@Data` for data classes).
-   - **Code Style:** Enforce consistent code style (e.g., spacing, braces, etc.).
-   - **Security:** Flag any use of deprecated or insecure APIs (e.g., `MD5`, `DES`, etc.).
-   - **Performance:** Flag any inefficient code patterns (e.g., using `String` concatenation in loops).
-   - **Concurrency:** Flag any potential concurrency issues (e.g., shared mutable state without synchronization).
-   - **Testing:** Flag any public methods that lack corresponding unit tests (if test files are available).
-   - **Documentation:** Flag any public classes or methods that lack Javadoc comments.
-   - **Code Smells:** Flag any code that is overly complex, has long methods, or violates SOLID principles.
-   - **Security:** Flag any hardcoded credentials, use of `Runtime.exec()`, or other potential security vulnerabilities.
-   - **Maintainability:** Flag any code that is difficult to read, understand, or maintain.
-   - **Scalability:** Flag any code that may not scale well with increased load or data size.
-   - **SOLID Principles:** Flag any violations of SOLID principles (e.g., Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion).
-   - **Design Patterns:** Suggest appropriate design patterns for complex code (e.g., Factory, Singleton, Observer, etc.).
+🗂️ Staged Files
+List all staged files before analysis.
+🧹 Dead Code
+Remove unused imports, fields, methods, parameters, locals.
+Flag unreachable code, duplicate logic, magic numbers.
+🚀 Modern Java
+Suggest records for data carriers.
+Use var for obvious local types.
+Enforce switch → syntax.
+Suggest text blocks for multi‑line strings.
+Use pattern matching for instanceof and switch.
+Suggest sealed classes when hierarchies are closed.
+Prefer “x %s”.formatted(v).
+🛡️ Best Practices
+Prefer Optional.map().orElse().
+Use Objects.requireNonNull.
+Replace println/printStackTrace with SLF4J.
+Enforce constructor injection.
+Use try‑with‑resources.
+Mark non‑reassigned fields final.
+Validate Lombok usage.
+Enforce consistent formatting.
+Flag deprecated or insecure APIs.
+Flag inefficient patterns (string concat in loops, unnecessary streams).
+Flag concurrency risks (shared mutable state, incorrect volatile usage).
+Flag missing tests for public methods.
+Flag missing Javadoc on public APIs.
+Flag long methods, high complexity, SOLID violations.
+Flag hardcoded credentials, unsafe exec, insecure file handling.
+Flag maintainability or scalability issues.
+Suggest design patterns when complexity warrants it.
+🔐 Security
+Flag SQL built via concatenation.
+Flag XML parsers without secure config.
+Flag file operations using unvalidated input.
+Require SecureRandom for sensitive operations.
+Flag unsafe deserialization.
+Flag exposure of internal mutable state.
+⚙️ Performance
+Flag unnecessary boxing/unboxing.
+Flag inefficient collection choices.
+Flag overly complex stream pipelines.
+Flag unbuffered I/O.
+Flag excessive object creation in hot paths.
+🧵 Concurrency
+Flag manual thread creation; suggest executors or CompletableFuture.
+Flag non‑final shared fields.
+Flag misuse of synchronized collections.
+Flag incorrect double‑checked locking.
+Flag blocking calls inside async/reactive code.
+🧪 Testing
+Flag weak or missing assertions.
+Flag insufficient coverage of logic branches.
+Suggest parameterized tests for repeated scenarios.
+Flag unnecessary mocks.
+🧰 Dependencies
+Flag unused or outdated dependencies.
+Flag dependencies with known vulnerabilities.
+Flag excessive transitive dependency usage.
+🧩 API & Design
+Flag interfaces with too many methods.
+Suggest Builder for constructors with many parameters.
+Flag overuse of static utilities.
+Flag public mutable fields.
+Flag mixed responsibilities.
+📝 Documentation
+Flag outdated TODO/FIXME.
+Flag comments that restate code.
+Require @since for public APIs when applicable.
+Output Format
+Status: APPROVED / REJECTED / CLEANUP REQUIRED
+Critical Issues: Injection, security risks, concurrency bugs, logic errors
+Dead Code Report: Unused imports, fields, methods, parameters, locals
+Modernization Tips: Records, pattern matching, sealed classes, text blocks
 
 **OUTPUT:**
 - **Status:** [APPROVED / REJECTED / CLEANUP REQUIRED]

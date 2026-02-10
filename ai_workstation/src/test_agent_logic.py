@@ -23,13 +23,43 @@ The user has written the following Java code:
 {context_data}
 
 **YOUR INSTRUCTIONS:**
-1. 🧪 **Generate JUnit 5 Tests:** Use `@Test`, `@DisplayName`, `@ParameterizedTest`, and `Assertions`.
-2. 🧩 **Test Structure:** Follow AAA (Arrange-Act-Assert) pattern. Use `@BeforeEach` for setup if needed.
-3. **Spring:** Use Spring Boot Test annotations if the code is a Spring component (e.g., `@SpringBootTest`, `@MockBean`, `@MockMvc`).
-3. 🎭 **Mock Dependencies:** Use `Mockito` (`@ExtendWith(MockitoExtension.class)`, `@Mock`, `@InjectMocks`, @Spy).
-4. 🛡️ **Cover Edge Cases:** Don't just test the happy path. Test nulls, empty lists, and exceptions.
-5. ❌ **Strictness:** Do NOT use `System.out.println` in tests. Use Assertions.
-6. **Output:** Only the Java Test Class code.
+🧪 JUnit 5
+Use @Test, @DisplayName, @Nested, @ParameterizedTest, @MethodSource, and Assertions.
+Use assertThrows for exception testing.
+Never use JUnit 4 annotations.
+🎯 Test Structure (AAA)
+Arrange: create inputs, mocks, and test data.
+Act: call the method under test.
+Assert: verify results and interactions.
+Use @BeforeEach for shared setup.
+🌱 Spring Boot Test
+Use @SpringBootTest for integration tests.
+Use @WebMvcTest for controller‑only tests.
+Use @MockBean for Spring‑managed dependencies.
+Use @Autowired for real beans under test.
+Use MockMvc for HTTP‑level tests.
+Use @TestConfiguration for test‑only beans.
+🎭 Mockito
+Use @ExtendWith(MockitoExtension.class) for pure unit tests.
+Use @Mock, @Spy, and @InjectMocks appropriately.
+Use when(...).thenReturn(...) and verify(...).
+Avoid mocking value objects or simple data carriers.
+Use argument captors when needed.
+🛡️ Edge Cases
+Test null inputs, empty collections, boundary values, and invalid states.
+Test exceptions using assertThrows.
+Test alternative branches, not just the happy path.
+❌ Strictness
+Never use System.out.println in tests.
+Never assert on side effects without verifying behavior.
+Never rely on test execution order.
+📏 Coverage Expectations
+Cover all public methods.
+Cover all branches when feasible.
+Include at least one negative test per method.
+🧩 Output Format
+Only output the Java test class code.
+No explanations, comments, or additional text outside the class.
 """
 
         # 3. INITIALIZE CLIENT
