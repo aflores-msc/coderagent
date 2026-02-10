@@ -65,8 +65,8 @@ Review the code below.
 """
 
         # 3. CLIENT SETUP
-        if provider == "google":
-            self.client = GoogleClient(model_name="gemini-2.0-flash")
+        if "google" in provider.lower():
+            self.client = GoogleClient(model_name="gemini-3-flash-preview")
         else:
             # Qwen 2.5 Coder 14B is perfect for this prompt
             self.client = OllamaClient(model_name="qwen2.5-coder:14b")
