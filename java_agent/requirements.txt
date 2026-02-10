@@ -3,3 +3,4 @@ ollama
 gitpython
 streamlit
 python-dotenv
+sqlglot
