@@ -1,0 +1,33 @@
+{
+  "users": {
+    "_id": "ObjectId('...')",
+    "username": "jdoe",
+    "email": "jdoe@example.com",
+    "joined_at": "ISODate('2023-01-01T00:00:00Z')",
+    "roles": ["admin", "editor"],
+    "address": {
+      "city": "San Francisco",
+      "zip": "94105"
+    },
+    "is_active": true
+  },
+  "orders": {
+    "_id": "ObjectId('...')",
+    "user_id": "ObjectId('...')",
+    "total_price": 150.50,
+    "status": "shipped",
+    "items": [
+      {
+        "product_name": "Wireless Mouse",
+        "quantity": 2,
+        "price": 25.00
+      },
+      {
+        "product_name": "Keyboard",
+        "quantity": 1,
+        "price": 100.50
+      }
+    ],
+    "created_at": "ISODate('2024-02-10T00:00:00Z')"
+  }
+}
