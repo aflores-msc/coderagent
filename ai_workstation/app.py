@@ -77,43 +77,44 @@ with st.sidebar:
         "📊 Class Diagram Generator",
         "📦 Dependency Inspector",
         "💾 Text-to-BigQuery",
-        "🍃 MongoDB Agent"
+        "🍃 Text-to-MongoDB"
     ])
 
-    # 1. Standard Input: Project Root (Used by Code Agents)
-    repo_path = st.text_input("Project Root Path", value="/Users/user/IdeaProjects/my-app")
+    # --- DYNAMIC INPUT TOGGLING ---
+    repo_path = None
+    schema_path = None
 
-    # 2. Conditional Input: Full Schema Path (Used by Data Agents)
-    schema_path = ""
-    if agent_type == "💾 Text-to-BigQuery":
-        schema_path = st.text_input("BigQuery Schema Path (.sql)", value="/Users/user/IdeaProjects/my-app/schema.sql")
-    elif agent_type == "🍃 MongoDB Agent":
-        schema_path = st.text_input("MongoDB Schema Path (.json)", value="/Users/user/IdeaProjects/my-app/schema.json")
+    # Group 1: Data Agents (Need Schema, NOT Project Root)
+    if agent_type in ["💾 Text-to-BigQuery", "🍃 Text-to-MongoDB"]:
+        default_schema = "/Users/user/IdeaProjects/my-app/schema.sql" if "BigQuery" in agent_type else "/Users/user/IdeaProjects/my-app/schema.json"
+        schema_path = st.text_input("Schema File Path", value=default_schema)
+
+    # Group 2: Code Agents (Need Project Root, NOT Schema)
+    else:
+        repo_path = st.text_input("Project Root Path", value="/Users/user/IdeaProjects/my-app")
 
     if st.button("🚀 Initialize Agent", type="primary"):
-        st.session_state.repo_path = repo_path
-
         try:
-            # --- DATA AGENTS (Validate Schema Path) ---
-            if agent_type == "💾 Text-to-BigQuery":
+            # --- INITIALIZATION LOGIC ---
+
+            # CASE 1: Data Agents (Validate Schema Path)
+            if agent_type in ["💾 Text-to-BigQuery", "🍃 Text-to-MongoDB"]:
                 if schema_path and os.path.exists(schema_path):
-                    st.session_state.agent = BigQueryAgent(schema_path=schema_path, provider=provider)
-                    st.success(f"✅ BigQuery Agent Initialized (Schema: {os.path.basename(schema_path)})")
+                    if agent_type == "💾 Text-to-BigQuery":
+                        st.session_state.agent = BigQueryAgent(schema_path=schema_path, provider=provider)
+                        st.success(f"✅ BigQuery Agent Initialized")
+                    elif agent_type == "🍃 Text-to-MongoDB":
+                        st.session_state.agent = MongoAgent(schema_path=schema_path, provider=provider)
+                        st.success(f"✅ Text-to-MongoDB Initialized")
                 else:
                     st.error(f"❌ Schema file not found: {schema_path}")
 
-            elif agent_type == "🍃 MongoDB Agent":
-                if schema_path and os.path.exists(schema_path):
-                    st.session_state.agent = MongoAgent(schema_path=schema_path, provider=provider)
-                    st.success(f"✅ MongoDB Agent Initialized (Schema: {os.path.basename(schema_path)})")
-                else:
-                    st.error(f"❌ Schema file not found: {schema_path}")
-
-            # --- CODE AGENTS (Validate Repo Path) ---
+            # CASE 2: Code Agents (Validate Repo Path)
             else:
-                if not os.path.exists(repo_path):
-                    st.error(f"❌ Project path not found: {repo_path}")
-                else:
+                if repo_path and os.path.exists(repo_path):
+                    # Save repo path for later use by these agents
+                    st.session_state.repo_path = repo_path
+
                     if agent_type == "📦 Dependency Inspector":
                         st.session_state.agent = DependencyInspectorAgent(provider=provider)
                         st.success("✅ Dependency Inspector Initialized")
@@ -129,6 +130,8 @@ with st.sidebar:
                     elif agent_type == "📊 Class Diagram Generator":
                         st.session_state.agent = ClassDiagramAgent(repo_path=repo_path, provider=provider)
                         st.success("✅ Class Diagram Generator Initialized")
+                else:
+                    st.error(f"❌ Project path not found: {repo_path}")
 
         except Exception as e:
             st.error(f"Failed to initialize: {str(e)}")
@@ -144,6 +147,7 @@ if "agent" in st.session_state:
         with col1:
             if st.button("🔍 Check for Latest Versions", type="primary"):
                 with st.spinner("Querying Maven Central..."):
+                    # Use the saved repo_path from session state
                     df = agent.check_project_dependencies(st.session_state.repo_path)
                     if not df.empty:
                         report_path = "dependency_report.parquet"
@@ -244,9 +248,9 @@ if "agent" in st.session_state:
             else:
                 st.warning("Please enter a question.")
 
-    # 6. MONGODB AGENT
+    # 6. Text-to-MongoDB
     elif isinstance(agent, MongoAgent):
-        st.header("🍃 MongoDB Agent")
+        st.header("🍃 Text-to-MongoDB")
         question = st.text_area("Ask a question about your MongoDB collections:")
         if st.button("Generate Query"):
             if question:
