@@ -15,6 +15,7 @@ class DependencyInspectorAgent:
             'version': None,
             'latest_version': 'Checking...',
             'status': 'unknown',
+            'mvn_link': None,  # <--- NEW FIELD
             'error': None
         }
 
@@ -72,11 +73,22 @@ class DependencyInspectorAgent:
                     local_version = str(v_data) if v_data else "unknown"
 
             latest = self._get_latest_maven_version(group, name) if group and name else "unknown"
+
+            # --- NEW: Generate MVNRepository Link ---
+            mvn_link = None
+            if group and name:
+                mvn_link = f"https://mvnrepository.com/artifact/{group}/{name}"
+
             status = "up-to-date"
             if latest not in ["Not Found", "Connection Error", "unknown"] and latest != local_version:
                 status = "outdated"
 
-            clean_status.update({'version': local_version, 'latest_version': latest, 'status': status})
+            clean_status.update({
+                'version': local_version,
+                'latest_version': latest,
+                'status': status,
+                'mvn_link': mvn_link  # <--- Save Link
+            })
             results.append({'Package': alias, 'Current': clean_status, 'Required': 'Catalog defined'})
 
         return pd.DataFrame(results)

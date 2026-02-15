@@ -112,7 +112,6 @@ with st.sidebar:
             # CASE 2: Code Agents (Validate Repo Path)
             else:
                 if repo_path and os.path.exists(repo_path):
-                    # Save repo path for later use by these agents
                     st.session_state.repo_path = repo_path
 
                     if agent_type == "📦 Dependency Inspector":
@@ -147,7 +146,6 @@ if "agent" in st.session_state:
         with col1:
             if st.button("🔍 Check for Latest Versions", type="primary"):
                 with st.spinner("Querying Maven Central..."):
-                    # Use the saved repo_path from session state
                     df = agent.check_project_dependencies(st.session_state.repo_path)
                     if not df.empty:
                         report_path = "dependency_report.parquet"
@@ -172,7 +170,14 @@ if "agent" in st.session_state:
             st.dataframe(
                 final_df.style.map(style_status, subset=['status']),
                 width="stretch",
-                hide_index=True
+                hide_index=True,
+                column_config={
+                    "mvn_link": st.column_config.LinkColumn(
+                        "Maven Repository",
+                        display_text="🔗 Open"
+                    ),
+                    "status": st.column_config.TextColumn("Status"),
+                }
             )
             st.info(agent.interpret_report(st.session_state.last_report))
 
@@ -248,7 +253,7 @@ if "agent" in st.session_state:
             else:
                 st.warning("Please enter a question.")
 
-    # 6. Text-to-MongoDB
+    # 6. MONGODB AGENT
     elif isinstance(agent, MongoAgent):
         st.header("🍃 Text-to-MongoDB")
         question = st.text_area("Ask a question about your MongoDB collections:")
