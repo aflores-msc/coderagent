@@ -1,4 +1,42 @@
-### **Executive Summary: Smart Developer Assistant**
+### Requierements
+#### To use a local LLM, you need to install Ollama
+- https://ollama.com/download
+
+And pull **qwen2.5-coder:14b**
+```bash
+$ ollama pull qwen2.5-coder:14b
+```
+
+#### You need a GOOGLE_API_KEY
+- https://aistudio.google.com
+
+And set it as an environment varialbe
+```bash
+$ export GOOGLE_API_KEY='<your_google_api_key>'
+```
+
+#### Install the required Python libraries
+```bash
+$ pip install -r ai_workstation/requirements.txt
+```
+
+#### Then you can start the Application
+```bash
+$ streamlit run ai_workstation/app.py
+```
+
+**NOTE:** Don't forget to activate your Python environment
+
+##### Linux
+```bash
+$ source .venv/bin/activate
+```
+##### Windows
+```bash
+.venv/Scripts/activate
+```
+
+### **Smart Developer Assistant**
 
 The **Smart Developer Assistant** is an AI-powered workstation designed to accelerate the software development lifecycle (SDLC) by automating routine engineering tasks. Built on a modular **Controller-Agent architecture**, the system integrates a Streamlit-based frontend with specialized backend agents that handle code quality, testing, architecture visualization, and data operations.
 
