@@ -1,15 +1,20 @@
-import os
 import json
 from src.shared.llm_clients import GoogleClient, OllamaClient
 
 
 class MongoAgent:
-    def __init__(self, schema_path: str, provider: str):
-        self.schema_path = schema_path
+    def __init__(self, schema_content: str, provider: str):
         self.provider = provider.lower()
 
-        print(f"🍃 mongo-agent: Loading schema from {schema_path}...")
-        schema_context = self._read_schema_file()
+        print(f"🍃 mongo-agent: Loading schema from content...")
+        
+        # Try to pretty-print JSON if possible, otherwise use raw content
+        try:
+            data = json.loads(schema_content)
+            schema_context = json.dumps(data, indent=2)
+        except json.JSONDecodeError:
+            # Fallback for non-JSON or malformed content
+            schema_context = schema_content
 
         # --- SYSTEM PROMPT ---
         # Specialized for Document Stores (No Joins, specific aggregation syntax)
@@ -59,18 +64,6 @@ Return only the MongoDB query.
             self.client = OllamaClient(model_name="qwen2.5-coder:14b")
 
         self.client.start_session(self.system_prompt)
-
-    def _read_schema_file(self) -> str:
-        if not os.path.exists(self.schema_path):
-            return "ERROR: Schema file not found."
-
-        try:
-            with open(self.schema_path, "r") as f:
-                # We validate that it's real JSON before feeding it to the AI
-                data = json.load(f)
-                return json.dumps(data, indent=2)
-        except Exception as e:
-            return f"ERROR: Could not parse schema JSON. {e}"
 
     def ask(self, user_question: str) -> str:
         # 1. GENERATE

@@ -1,19 +1,12 @@
-import os
 import sqlglot
 from src.shared.llm_clients import GoogleClient, OllamaClient
 
 
 class BigQueryAgent:
-    def __init__(self, schema_path: str, provider: str):
-        self.schema_path = schema_path
-
+    def __init__(self, schema_content: str, provider: str):
         # 1. READ SCHEMA
-        print(f"📄 sql-agent: Loading schema from {schema_path}...")
-        if not os.path.exists(self.schema_path):
-            raise FileNotFoundError(f"Schema file not found at {self.schema_path}")
-
-        with open(self.schema_path, "r") as f:
-            schema_context = f.read()
+        print(f"📄 sql-agent: Loading schema from content...")
+        schema_context = schema_content
 
         # 2. UNIFIED SYSTEM PROMPT (Works for Qwen & Gemini)
         self.system_prompt = f"""

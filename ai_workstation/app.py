@@ -82,12 +82,11 @@ with st.sidebar:
 
     # --- DYNAMIC INPUT TOGGLING ---
     repo_path = None
-    schema_path = None
+    uploaded_schema = None
 
     # Group 1: Data Agents (Need Schema, NOT Project Root)
     if agent_type in ["💾 Text-to-BigQuery", "🍃 Text-to-MongoDB"]:
-        default_schema = "/Users/user/IdeaProjects/my-app/schema.sql" if "BigQuery" in agent_type else "/Users/user/IdeaProjects/my-app/schema.json"
-        schema_path = st.text_input("Schema File Path", value=default_schema)
+        uploaded_schema = st.file_uploader("Upload Schema File", type=["sql", "json"])
 
     # Group 2: Code Agents (Need Project Root, NOT Schema)
     else:
@@ -99,15 +98,16 @@ with st.sidebar:
 
             # CASE 1: Data Agents (Validate Schema Path)
             if agent_type in ["💾 Text-to-BigQuery", "🍃 Text-to-MongoDB"]:
-                if schema_path and os.path.exists(schema_path):
+                if uploaded_schema is not None:
+                    schema_content = uploaded_schema.getvalue().decode("utf-8")
                     if agent_type == "💾 Text-to-BigQuery":
-                        st.session_state.agent = BigQueryAgent(schema_path=schema_path, provider=provider)
+                        st.session_state.agent = BigQueryAgent(schema_content=schema_content, provider=provider)
                         st.success(f"✅ BigQuery Agent Initialized")
                     elif agent_type == "🍃 Text-to-MongoDB":
-                        st.session_state.agent = MongoAgent(schema_path=schema_path, provider=provider)
+                        st.session_state.agent = MongoAgent(schema_content=schema_content, provider=provider)
                         st.success(f"✅ Text-to-MongoDB Initialized")
                 else:
-                    st.error(f"❌ Schema file not found: {schema_path}")
+                    st.error(f"❌ Please upload a schema file.")
 
             # CASE 2: Code Agents (Validate Repo Path)
             else:
